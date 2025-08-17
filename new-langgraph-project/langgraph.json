@@ -4,7 +4,10 @@
     "agent": "agent.graph:graph",
     "events": "agent.tasks:events_graph",
     "markets": "agent.tasks:markets_graph",
-    "sports_data": "agent.tasks:sports_data_graph"
+    "sports_data": "agent.tasks:sports_data_graph",
+    "mem_list": "agent.graph:mem_list_graph",
+    "mem_dump": "agent.graph:mem_dump_graph",
+    "mem_add": "agent.graph:mem_add_graph"
   },
   "env": ".env",
   "image_distro": "wolfi"

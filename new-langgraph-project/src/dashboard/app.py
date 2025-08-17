@@ -44,7 +44,7 @@ def main() -> None:
     st.caption("No WSL required. Windows, macOS, Linux supported. Single dashboard + single venv.")
 
     # Sidebar: section selector
-    section = st.sidebar.radio("Section", ["Overview", "Invoke", "Console", "Logs"], index=0)
+    section = st.sidebar.radio("Section", ["Overview", "Invoke", "Console", "Mem0", "Logs"], index=0)
 
     # Target project selector (Template vs Sportman)
     st.sidebar.markdown("### Target Project")
@@ -154,6 +154,11 @@ def main() -> None:
                     return "{\n  \"sport_key\": \"basketball_nba\",\n  \"event_id\": \"<fill-event-id>\",\n  \"markets\": \"h2h,spreads,totals\",\n  \"region\": \"us\"\n}"
                 if gid == "sports_data":
                     return "{\n  \"league_path\": \"basketball/nba/scoreboard\"\n}"
+                # mem0 graphs (template)
+                if gid == "mem_list" or gid == "mem_dump":
+                    return "{}"
+                if gid == "mem_add":
+                    return "{\n  \"title\": \"Sample\",\n  \"content\": \"Hello from dashboard\",\n  \"tags\": \"demo,notes\"\n}"
             except Exception:
                 pass
             return "{}"
@@ -437,6 +442,77 @@ def main() -> None:
                 "cmd": [reg[k].get("cmd") for k in reg.keys()],
                 "started_at": [reg[k].get("started_at") for k in reg.keys()],
             })
+
+    elif section == "Mem0":
+        st.subheader("Mem0 (file-backed memory store)")
+        try:
+            import importlib.metadata as md
+            ver = md.version("mem0-mcp")
+        except Exception:
+            ver = "not installed"
+        st.caption(f"Package: mem0-mcp {ver}")
+
+        # Try to import store helpers
+        try:
+            from mem0_mcp import store as mem0_store  # type: ignore
+            mem0_ok = True
+        except Exception as e:
+            mem0_ok = False
+            st.error(f"mem0_mcp not available: {e}. Install D:\\mem0 or pip install mem0-mcp.")
+
+        # Allow setting MEM0_PATH for this session
+        import os as _os
+        current_path = _os.getenv("MEM0_PATH", "")
+        new_path = st.text_input("MEM0_PATH (optional):", value=current_path, placeholder="e.g., H:/langgraph/logs/mem0.json")
+        colp1, colp2 = st.columns([1,1])
+        with colp1:
+            if st.button("Apply Path"):
+                if new_path:
+                    _os.environ["MEM0_PATH"] = new_path
+                    st.success(f"MEM0_PATH set to {new_path}")
+                else:
+                    if "MEM0_PATH" in _os.environ:
+                        _os.environ.pop("MEM0_PATH")
+                    st.info("MEM0_PATH cleared; using default mem0.json in cwd")
+        with colp2:
+            if mem0_ok and st.button("Show Resolved Path"):
+                try:
+                    st.write(str(mem0_store.MEM_PATH))
+                except Exception as e:
+                    st.warning(f"Unable to resolve: {e}")
+
+        st.divider()
+        if mem0_ok:
+            c1, c2, c3 = st.columns([1,1,1])
+            with c1:
+                if st.button("List Notes"):
+                    data = mem0_store.load_mem()
+                    titles = [n.get("title", "(untitled)") for n in data.get("notes", [])]
+                    if not titles:
+                        st.info("No notes yet.")
+                    else:
+                        st.write({"notes": titles})
+            with c2:
+                if st.button("Dump JSON"):
+                    data = mem0_store.load_mem()
+                    st.code(json.dumps(data, indent=2), language="json")
+            with c3:
+                st.write("")
+
+            st.subheader("Add Note")
+            nt1, nt2 = st.columns([1,3])
+            with nt1:
+                title = st.text_input("Title", value="")
+            with nt2:
+                content = st.text_area("Content", value="")
+            tags = st.text_input("Tags (comma separated)", value="")
+            if st.button("Save Note"):
+                try:
+                    tag_list = [t.strip() for t in (tags or "").split(",") if t.strip()]
+                    mem0_store.add_note(title or "(untitled)", content or "", tag_list)
+                    st.success("Note saved.")
+                except Exception as e:
+                    st.error(f"Failed to save: {e}")
 
         # Show running jobs
         if _CONSOLE_PROCS:

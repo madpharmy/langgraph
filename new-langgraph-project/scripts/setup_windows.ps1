@@ -26,6 +26,12 @@ Write-Host '==> Upgrading pip'
 Write-Host '==> Installing project (editable) + LangGraph CLI (in-memory)'
 .\.venv\Scripts\pip.exe install -e . "langgraph-cli[inmem]"
 
+# Optional: install local mem0 if present
+if (Test-Path 'D:\mem0\pyproject.toml') {
+  Write-Host '==> Installing local mem0 (D:\mem0)'
+  .\.venv\Scripts\pip.exe install -e D:\mem0 | Write-Host
+}
+
 if (-not (Test-Path '.env') -and (Test-Path '.env.example')) {
   Copy-Item '.env.example' '.env'
   Write-Host '==> Created .env from .env.example. Please edit .env to set keys.'
@@ -38,4 +44,3 @@ Write-Host '==> Python version:'
 .\.venv\Scripts\python.exe -c "import sys; print(sys.version)"
 
 Write-Host '==> Setup complete.'
-
