@@ -1,0 +1,11 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agent": "agent.graph:graph",
+    "events": "agent.tasks:events_graph",
+    "markets": "agent.tasks:markets_graph",
+    "sports_data": "agent.tasks:sports_data_graph"
+  },
+  "env": ".env",
+  "image_distro": "wolfi"
+}
