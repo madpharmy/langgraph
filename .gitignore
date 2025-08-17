@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+sportman/.venv/
+new-langgraph-project/.venv/
+
+# Logs and artifacts
+logs/
+*.log
+*.zip
+
+# Node
+node_modules/
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
